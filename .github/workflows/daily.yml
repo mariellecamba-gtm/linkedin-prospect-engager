@@ -1,0 +1,84 @@
+name: LinkedIn Prospect Engager
+
+# Runs the whole thing on a schedule, on GitHub's machines, for free on a public
+# repo. Nothing to host. Add your keys under
+# Settings -> Secrets and variables -> Actions before enabling this.
+
+on:
+  schedule:
+    # 14:00 UTC = 10:00 New York while EDT is in effect. GitHub cron is UTC only
+    # and does not follow daylight saving, so this lands an hour earlier in
+    # winter. Change the number to move it.
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "How many days back to read (1 = yesterday and today so far)"
+        type: string
+        default: "1"
+      posted_limit:
+        description: "Backfill only: a rolling window (week, month) instead of a calendar day"
+        type: string
+        default: ""
+      dry_run:
+        description: "Dry run: draft nothing anywhere, just log what would happen"
+        type: boolean
+        default: false
+
+concurrency:
+  group: prospect-engager
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # commit state/seen.json so tomorrow does not redraft today
+  issues: write     # open the daily digest issue
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Read posts, draft comments, publish the digest
+        env:
+          # Required.
+          APIFY_API_KEY: ${{ secrets.APIFY_API_KEY }}
+          # One of these two.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Optional. Leave the secrets unset and the digest goes to an issue.
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          # Optional. Your name, so the prompt can address you.
+          YOUR_NAME: ${{ vars.YOUR_NAME }}
+          # Injected by Actions, no secret to create.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          POSTED_LIMIT: ${{ inputs.posted_limit }}
+          LOOKBACK_DAYS: ${{ inputs.lookback_days || '1' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node scripts/run.mjs
+
+      - name: Remember which posts were already drafted
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if [[ -n "$(git status --porcelain state/)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state/
+            git commit -m "chore: seen posts $(date -u +%Y-%m-%d) [skip ci]"
+            git pull --rebase --autostash origin ${{ github.ref_name }}
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "no state change"
+          fi

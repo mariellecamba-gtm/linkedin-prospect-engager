@@ -1,0 +1,9 @@
+node_modules/
+.env
+output/
+*service-account*.json
+.DS_Store
+
+# config/prospects.csv and state/seen.json are NOT ignored on purpose: the
+# scheduled GitHub Action needs both committed to your own copy of this repo.
+# If your list is sensitive, keep your copy private.
