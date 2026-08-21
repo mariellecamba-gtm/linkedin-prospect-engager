@@ -146,17 +146,22 @@ only touches rows still marked To do).
 The repo includes a GitHub Action that does the whole run on GitHub's machines.
 On a public repo this is free.
 
-1. Fork this repo, or push your copy to a new one. **If your prospect list is
-   sensitive, make it private** — the CSV gets committed.
+1. Click **Use this template → Create a new repository** at the top of this page,
+   or push your clone to a repo of your own. **If your prospect list is sensitive,
+   make it private** — the CSV gets committed.
 2. In your repo: **Settings → Secrets and variables → Actions → New repository
    secret**, and add `APIFY_API_KEY` plus one of `ANTHROPIC_API_KEY` or
    `OPENAI_API_KEY`. Add `SHEET_ID`, `GOOGLE_SERVICE_ACCOUNT_JSON`,
    `SLACK_BOT_TOKEN` and `SLACK_CHANNEL` too if you use them.
 3. On the **Variables** tab of the same page, add `YOUR_NAME`.
 4. Commit your filled-in `config/` files.
-5. **Actions → LinkedIn Prospect Engager → Run workflow** to try it once. It runs
-   daily at 14:00 UTC after that. Change the `cron` line in
+5. Open the **Actions** tab and enable workflows if GitHub asks. Then
+   **LinkedIn Prospect Engager → Run workflow** to try it once. It runs daily at
+   14:00 UTC after that. Change the `cron` line in
    [`.github/workflows/daily.yml`](.github/workflows/daily.yml) to move it.
+
+The schedule is switched off on this template repo, so your copy is the only one
+that will ever run.
 
 With no Google Sheet configured, the Action opens a GitHub issue per day with the
 whole digest in it. GitHub emails you the issue, which turns out to be a fine way
