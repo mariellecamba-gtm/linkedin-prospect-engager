@@ -5,7 +5,32 @@
   "type": "module",
   "license": "MIT",
   "description": "Watch a list of people on LinkedIn and draft one honest comment on each post worth engaging with.",
-  "engines": { "node": ">=20" },
+  "keywords": [
+    "linkedin",
+    "linkedin-automation",
+    "linkedin-comments",
+    "social-selling",
+    "warm-outbound",
+    "sales-automation",
+    "prospecting",
+    "lead-generation",
+    "outbound-sales",
+    "cold-outreach",
+    "ai-comments",
+    "gtm",
+    "gtm-engineering",
+    "extrovert-alternative",
+    "claude",
+    "anthropic",
+    "openai",
+    "apify",
+    "github-actions",
+    "sales-engagement"
+  ],
+  "homepage": "https://github.com/mariellecamba-gtm/linkedin-prospect-engager",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "setup": "node scripts/setup.mjs",
     "check": "node scripts/setup.mjs --check",
