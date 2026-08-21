@@ -1,5 +1,11 @@
 # LinkedIn Prospect Engager
 
+**An open-source LinkedIn engagement tool that watches the people you want to
+know, reads their posts every morning, and drafts one short, honest comment on
+each post worth engaging with.** Self-hosted, free to run, no seat pricing. If
+you came here looking for an open-source alternative to Extrovert, Aware or
+Taplio, this is that.
+
 Give it a list of people you want to know. Every morning it reads what they
 posted on LinkedIn yesterday, throws out the posts not worth reacting to, and
 hands you one short, honest comment for each of the rest, ready to paste.
@@ -17,6 +23,17 @@ comment that does not read as generated.
 | --- | --- | --- |
 | Dana Reyes, Head of RevOps | *"we killed our lead scoring model this week..."* | killing the scoring model before replacing it takes more nerve than the rebuild |
 | Sam Okafor, VP Sales | *"day 4 of the offsite and my voice is gone"* | day 4 voice is a real measure of an offsite |
+
+## Who this is for
+
+- **Founders and salespeople doing warm outbound**, who want to be recognised in
+  someone's comments before the first DM.
+- **GTM engineers** who would rather own the pipeline than rent it, and want to
+  edit the prompt instead of filing a feature request.
+- **Agencies** running social selling for several people at once. One clone per
+  client, one CSV each, no per-seat cost.
+- **Anyone who has tried an AI commenting tool and hated the output.** The
+  comment rules here are the actual product, and you can rewrite them.
 
 ---
 
@@ -270,6 +287,34 @@ Command-line flags override the file: `--dry-run`, `--limit=N`,
 
 ---
 
+## How this compares to Extrovert, Aware and Taplio
+
+This tool started as an attempt to rebuild the part of
+[Extrovert](https://www.goextrovert.com/) that mattered most: watch a list of
+people, suggest a comment, let the human decide. Extrovert says it best, and the
+whole idea is theirs: *be known before you pitch*.
+
+They are not the same kind of thing, and the honest comparison is short:
+
+| | Hosted tools (Extrovert, Aware, Taplio) | This repo |
+| --- | --- | --- |
+| Cost | per seat, per month | your API usage, cents a day |
+| Setup | sign up and go | 20 minutes and a terminal |
+| The comment rules | theirs, fixed | [a markdown file you edit](config/voice.md) |
+| Where the drafts go | their app | a markdown file, a Google Sheet, or a GitHub issue |
+| Your prospect list | on their servers | in your repo |
+| Team features, browser extension, support | yes | no |
+| Posts for you | some do | never, by design |
+
+**Use a hosted tool if** you want a polished inbox, a browser extension, a team
+seat model and somebody to email when it breaks.
+
+**Use this if** you want to own the list, tune the voice yourself, run it for
+free on GitHub Actions, and read exactly what the model was told before it wrote
+in your name.
+
+---
+
 ## When something breaks
 
 Run `npm run check` first. It tells you which key is missing or rejected, how
@@ -286,6 +331,70 @@ still templates.
 | Every comment reads generic | `config/about-me.md` is still the template |
 | The comments do not sound like you | `config/voice-samples.md` is still the template |
 | `Sheets ... -> 403` | the sheet is not shared with the service account's `client_email` |
+
+---
+
+## Questions people actually ask
+
+### Does this post comments to LinkedIn automatically?
+
+No, and it never will. It writes drafts. You read them, change what you would
+say differently, and paste the ones you like. Automated commenting is how
+accounts get restricted and how comment sections fill up with noise.
+
+### Do I need my LinkedIn password or a session cookie?
+
+No. It reads public posts through [Apify](https://apify.com), so your account is
+never logged into, automated, or put at risk.
+
+### How is this different from an AI comment generator browser extension?
+
+An extension writes a comment for whatever post is on your screen. This decides
+*which* posts are worth a comment in the first place, across a list of hundreds
+of people, before you open LinkedIn. Roughly a third of posts get skipped, with a
+reason recorded for each.
+
+### Will the comments sound like AI?
+
+That is the whole problem this repo is built around. One sentence, no em dashes,
+no "this really resonates", no praise openers, no lessons or takeaways, and a
+rewrite loop that catches the drafts that break the rules. The full rule set is
+in [`config/voice.md`](config/voice.md), and it is a markdown file you can argue
+with.
+
+### What does it cost to run?
+
+Cents a day. Apify's free tier ($5/month of credit) covers a daily run over a
+list of about 100 people, the model calls are a few cents per run, and GitHub
+Actions is free on a public repo. See [What it costs](#what-it-costs).
+
+### Do I need to know how to code?
+
+You need to be able to run three commands in a terminal and edit a spreadsheet
+and two text files. `npm run setup` asks for each key and tells you where to get
+it. No code is edited at any point.
+
+### Can I use GPT instead of Claude?
+
+Yes. Set `OPENAI_API_KEY` instead of `ANTHROPIC_API_KEY`, and pick the model with
+`OPENAI_MODEL`. `gpt-4o-mini` is the cheap default and it works, though the
+rewrite loop earns its keep more often on smaller models.
+
+### How many people can it track?
+
+Hundreds. Profiles are scraped in batches of 60, and `MAX_DRAFTS` caps how many
+comments get written per run so your bill has a ceiling.
+
+### Can I run it for more than one person, like for clients?
+
+Yes. Clone it once per person. Each copy has its own `config/about-me.md`,
+`config/voice-samples.md` and prospect list, so the voices stay separate.
+
+### Does it write the DM too?
+
+It drafts one, in a separate field, meant to be sent days after the comment
+lands. It never sends anything, and the reason someone is on your list stays out
+of both the comment and the first line of the DM.
 
 ---
 
